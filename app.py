@@ -66,6 +66,23 @@ def handle_fix_link_shortcut(ack, body, respond):
     logger.info("shortcut handled: %d link(s)", len(links))
 
 
+def handle_op_command(ack, command, respond):
+    """Slash command /1p-link <link>: convert a private link and post it to
+    the conversation. The reply goes through response_url, so it works in any
+    conversation regardless of bot membership (including DMs); only the
+    usage hint for bad input stays ephemeral."""
+    ack()
+    links = extract_deep_links(command.get("text") or "")
+    if links:
+        respond(text="\n".join(f"`{link}`" for link in links), response_type="in_channel")
+    else:
+        respond(
+            text="Usage: `/1p-link <1Password private link>` — paste a `start.1password.com` link to convert it.",
+            response_type="ephemeral",
+        )
+    logger.info("/1p-link handled: %d link(s)", len(links))
+
+
 def auto_join_enabled():
     toggle = os.environ.get("AUTO_JOIN_PUBLIC_CHANNELS", "true").strip().lower()
     return toggle in ("1", "true", "yes", "t", "y")
@@ -103,6 +120,7 @@ def create_app(**overrides):
     app.client.retry_handlers.append(RateLimitErrorRetryHandler(max_retry_count=3))
     app.event("message")(handle_message)
     app.shortcut("fix_op_link")(handle_fix_link_shortcut)
+    app.command("/1p-link")(handle_op_command)
     return app
 
 

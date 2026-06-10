@@ -167,6 +167,40 @@ class TestShortcutWiring:
         assert "No 1Password private links" in webhook_calls[0]["text"]
 
 
+def dispatch_command(app, slack_api, text):
+    payload = {
+        "command": "/1p-link",
+        "text": text,
+        "token": "verification-token",
+        "trigger_id": "111.222.abc",
+        "team_id": "T1",
+        "user_id": "U1",
+        # a DM between two other users: the bot is not a member of D999
+        "channel_id": "D999",
+        "channel_name": "directmessage",
+        "response_url": f"http://127.0.0.1:{slack_api.server_port}/response_url",
+    }
+    return app.dispatch(BoltRequest(body=payload, mode="socket_mode"))
+
+
+class TestCommandWiring:
+    def test_command_posts_visibly_through_response_url(self, app, slack_api):
+        response = dispatch_command(app, slack_api, PRIVATE_LINK)
+
+        assert response.status == 200
+        webhook_calls = [payload for path, payload in slack_api.calls if path == "/response_url"]
+        assert len(webhook_calls) == 1
+        assert webhook_calls[0]["response_type"] == "in_channel"
+        assert f"`{DEEP_LINK}`" in webhook_calls[0]["text"]
+        assert posted_messages(slack_api) == []
+
+    def test_command_without_link_shows_usage(self, app, slack_api):
+        dispatch_command(app, slack_api, "")
+
+        webhook_calls = [payload for path, payload in slack_api.calls if path == "/response_url"]
+        assert "Usage:" in webhook_calls[0]["text"]
+
+
 class TestAppConstruction:
     def test_rate_limit_retry_handler_is_attached(self, app):
         assert any(isinstance(h, RateLimitErrorRetryHandler) for h in app.client.retry_handlers)

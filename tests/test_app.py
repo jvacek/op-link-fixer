@@ -7,6 +7,7 @@ from app import (
     extract_deep_links,
     handle_fix_link_shortcut,
     handle_message,
+    handle_op_command,
 )
 
 PRIVATE_LINK = "https://start.1password.com/open/i?a=A&amp;v=V&amp;i=I&amp;h=team.1password.com"
@@ -166,6 +167,30 @@ class TestHandleFixLinkShortcut:
 
         assert len(ack.calls) == 1
         assert "No 1Password private links" in respond.calls[0]["text"]
+
+
+class TestHandleOpCommand:
+    def test_converts_pasted_link_and_posts_to_the_conversation(self):
+        ack = SaySpy()
+        respond = SaySpy()
+
+        handle_op_command(ack, {"command": "/1p-link", "text": PRIVATE_LINK}, respond)
+
+        assert len(ack.calls) == 1
+        assert respond.calls[0]["response_type"] == "in_channel"
+        assert f"`{DEEP_LINK}`" in respond.calls[0]["text"]
+
+    @pytest.mark.parametrize("text", ["", "not a link", None])
+    def test_missing_or_invalid_input_shows_usage(self, text):
+        ack = SaySpy()
+        respond = SaySpy()
+        command = {"command": "/1p-link"} if text is None else {"command": "/1p-link", "text": text}
+
+        handle_op_command(ack, command, respond)
+
+        assert len(ack.calls) == 1
+        assert respond.calls[0]["response_type"] == "ephemeral"
+        assert "Usage:" in respond.calls[0]["text"]
 
 
 class TestAutoJoinEnabled:

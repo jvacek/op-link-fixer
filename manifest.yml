@@ -11,6 +11,11 @@ features:
       type: message
       callback_id: fix_op_link
       description: Get the onepassword:// deep link for this message's private link
+  slash_commands:
+    - command: /1p-link
+      description: Convert a 1Password private link to its onepassword:// deep link
+      usage_hint: "[paste a start.1password.com private link]"
+      should_escape: false
 oauth_config:
   scopes:
     bot:
