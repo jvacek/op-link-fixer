@@ -30,6 +30,7 @@ links and thread-replies with the corrected URI.
 
 ```
 app.py                          — bot entrypoint (all logic lives here)
+tests/test_app.py               — pytest unit tests (pure stubs, no network)
 pyproject.toml / uv.lock        — Python project, managed with uv
 manifest.yml                    — Slack app config as code (scopes, events, socket mode)
 .env.example                    — documents the env vars
@@ -42,9 +43,9 @@ README.md                       — setup walkthrough
 ```
 
 Dependencies: `slack-bolt` (pulls in `slack_sdk`) and `python-dotenv`. Dev
-tools (`ruff`, `pyrefly`) live in the `dev` dependency group and are
-configured in `pyproject.toml`; CI enforces `uv lock --check`, `ruff check`,
-`ruff format --check`, and `pyrefly check` on pushes and PRs.
+tools (`ruff`, `pyrefly`, `pytest`) live in the `dev` dependency group and
+are configured in `pyproject.toml`; CI enforces `uv lock --check`, `pytest`,
+`ruff check`, `ruff format --check`, and `pyrefly check` on pushes and PRs.
 
 ---
 

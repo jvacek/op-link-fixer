@@ -60,6 +60,7 @@ Checks (all enforced by CI on pushes and PRs):
 
 ```bash
 uv lock --check            # lockfile in sync with pyproject.toml
+uv run pytest              # unit tests
 uv run ruff check .        # lint
 uv run ruff format .       # format (CI runs --check)
 uv run pyrefly check       # type check
