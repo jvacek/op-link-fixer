@@ -2,17 +2,17 @@
 name = "op-link-fixer"
 version = "0.1.0"
 description = "Slack bot that replies to 1Password private links with the onepassword:// deep link"
-requires-python = ">=3.9"
+requires-python = ">=3.13"
 dependencies = [
     "slack-bolt>=1.21",
-    "python-dotenv>=1.0",
+    "python-dotenv>=1.2.2",
 ]
 
 [dependency-groups]
 dev = [
     "ruff>=0.15",
     "pyrefly>=1.0",
-    "pytest>=8",
+    "pytest>=9.0.3",
 ]
 
 [tool.uv]
