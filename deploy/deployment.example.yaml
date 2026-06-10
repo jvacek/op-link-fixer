@@ -1,0 +1,39 @@
+# Example Kubernetes deployment. Create the token secret first:
+#
+#   kubectl create secret generic op-link-fixer \
+#     --from-literal=SLACK_BOT_TOKEN=xoxb-... \
+#     --from-literal=SLACK_APP_TOKEN=xapp-...
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: op-link-fixer
+  labels:
+    app: op-link-fixer
+spec:
+  # Must stay 1: every replica opens its own Socket Mode connection and
+  # receives every event, so >1 replica means duplicate replies.
+  replicas: 1
+  selector:
+    matchLabels:
+      app: op-link-fixer
+  template:
+    metadata:
+      labels:
+        app: op-link-fixer
+    spec:
+      containers:
+        - name: op-link-fixer
+          image: ghcr.io/jvacek/op-link-fixer:latest
+          envFrom:
+            - secretRef:
+                name: op-link-fixer
+          env:
+            - name: AUTO_JOIN_PUBLIC_CHANNELS
+              value: "true"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
