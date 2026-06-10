@@ -12,6 +12,7 @@ dependencies = [
 dev = [
     "ruff>=0.15",
     "pyrefly>=1.0",
+    "pytest>=8",
 ]
 
 [tool.uv]
@@ -19,6 +20,10 @@ package = false
 
 [tool.pyrefly]
 project-includes = ["app.py"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
 
 [tool.ruff]
 line-length = 120
