@@ -81,8 +81,10 @@ def auto_join_public_channels(client):
     logger.info("auto-join done: %d joined, %d already member, %d failed", joined, already, failed)
 
 
-def create_app():
-    app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
+def create_app(**overrides):
+    # overrides let tests inject a client pointed at a mock server and disable
+    # token verification; production passes nothing.
+    app = App(token=os.environ.get("SLACK_BOT_TOKEN"), **overrides)
     # Mass-joining hundreds of channels can hit 429s; honor Retry-After.
     app.client.retry_handlers.append(RateLimitErrorRetryHandler(max_retry_count=3))
     app.event("message")(handle_message)
