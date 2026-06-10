@@ -53,7 +53,8 @@ def handle_message(event, say):
 
 
 def auto_join_enabled():
-    return os.environ.get("AUTO_JOIN_PUBLIC_CHANNELS", "true").strip().lower() in ("1", "true", "yes")
+    toggle = os.environ.get("AUTO_JOIN_PUBLIC_CHANNELS", "true").strip().lower()
+    return toggle in ("1", "true", "yes")
 
 
 def auto_join_public_channels(client):
@@ -75,7 +76,9 @@ def auto_join_public_channels(client):
                 joined += 1
             except SlackApiError as e:
                 failed += 1
-                logger.warning("could not join #%s: %s", channel.get("name"), e.response.get("error"))
+                logger.warning(
+                    "could not join #%s: %s", channel.get("name"), e.response.get("error")
+                )
         cursor = (page.get("response_metadata") or {}).get("next_cursor")
         if not cursor:
             break
