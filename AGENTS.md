@@ -35,11 +35,16 @@ manifest.yml                    — Slack app config as code (scopes, events, so
 .env.example                    — documents the env vars
 Dockerfile / .dockerignore      — container image (uv alpine base)
 .github/workflows/docker.yml    — publishes ghcr.io/jvacek/op-link-fixer on push to main
+.github/workflows/ci.yml        — uv lock check, ruff lint + format, pyrefly type check
+.pre-commit-config.yaml         — same checks locally (uvx pre-commit install)
 deploy/deployment.example.yaml  — single-replica Kubernetes example
 README.md                       — setup walkthrough
 ```
 
-Dependencies: `slack-bolt` (pulls in `slack_sdk`) and `python-dotenv`.
+Dependencies: `slack-bolt` (pulls in `slack_sdk`) and `python-dotenv`. Dev
+tools (`ruff`, `pyrefly`) live in the `dev` dependency group and are
+configured in `pyproject.toml`; CI enforces `uv lock --check`, `ruff check`,
+`ruff format --check`, and `pyrefly check` on pushes and PRs.
 
 ---
 

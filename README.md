@@ -49,6 +49,22 @@ uv run app.py
   file uploads with comments; ignores edits, deletions, and all bot messages
   (no self-reply loops).
 
+## Development
+
+```bash
+uv sync                    # installs dev tools (ruff, pyrefly) too
+uvx pre-commit install     # run the hooks on every commit
+```
+
+Checks (all enforced by CI on pushes and PRs):
+
+```bash
+uv lock --check            # lockfile in sync with pyproject.toml
+uv run ruff check .        # lint
+uv run ruff format .       # format (CI runs --check)
+uv run pyrefly check       # type check
+```
+
 ## Deploy
 
 Every push to `main` (and `v*` tags) publishes
