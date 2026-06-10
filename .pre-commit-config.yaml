@@ -1,0 +1,20 @@
+repos:
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.11.19
+    hooks:
+      - id: uv-lock
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.16
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/facebook/pyrefly-pre-commit
+    rev: 1.0.0
+    hooks:
+      - id: pyrefly-check
+        # The hook env is isolated, so pyrefly can't see the project's venv;
+        # mirror the runtime deps here or imports fail to resolve.
+        additional_dependencies: ["slack-bolt>=1.21", "python-dotenv>=1.0"]
