@@ -132,6 +132,41 @@ class TestMessageWiring:
         assert posted_messages(slack_api) == []
 
 
+def dispatch_shortcut(app, slack_api, message_text):
+    payload = {
+        "type": "message_action",
+        "callback_id": "fix_op_link",
+        "token": "verification-token",
+        "trigger_id": "111.222.abc",
+        "team": {"id": "T1"},
+        "user": {"id": "U1"},
+        # a DM between two other users: the bot is not a member of D999
+        "channel": {"id": "D999", "name": "directmessage"},
+        "message": {"type": "message", "text": message_text, "ts": "123.456"},
+        "response_url": f"http://127.0.0.1:{slack_api.server_port}/response_url",
+    }
+    return app.dispatch(BoltRequest(body=payload, mode="socket_mode"))
+
+
+class TestShortcutWiring:
+    def test_shortcut_replies_through_response_url(self, app, slack_api):
+        response = dispatch_shortcut(app, slack_api, f"psst <{PRIVATE_LINK}>")
+
+        assert response.status == 200
+        webhook_calls = [payload for path, payload in slack_api.calls if path == "/response_url"]
+        assert len(webhook_calls) == 1
+        assert webhook_calls[0]["response_type"] == "ephemeral"
+        assert f"`{DEEP_LINK}`" in webhook_calls[0]["text"]
+        # nothing posted via the Web API: the bot is not in this conversation
+        assert posted_messages(slack_api) == []
+
+    def test_shortcut_on_linkless_message_says_so(self, app, slack_api):
+        dispatch_shortcut(app, slack_api, "nothing relevant")
+
+        webhook_calls = [payload for path, payload in slack_api.calls if path == "/response_url"]
+        assert "No 1Password private links" in webhook_calls[0]["text"]
+
+
 class TestAppConstruction:
     def test_rate_limit_retry_handler_is_attached(self, app):
         assert any(isinstance(h, RateLimitErrorRetryHandler) for h in app.client.retry_handlers)

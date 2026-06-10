@@ -52,6 +52,20 @@ def handle_message(event, say):
     logger.info("replied with %d link(s) in channel %s", len(links), event.get("channel"))
 
 
+def handle_fix_link_shortcut(ack, body, respond):
+    """Message shortcut: works on any message the invoking user can see —
+    including DMs and private channels the bot is not a member of — because
+    the reply goes through the payload's response_url, not chat.postMessage.
+    The response is ephemeral: only the invoker sees it."""
+    ack()
+    links = extract_deep_links((body.get("message") or {}).get("text") or "")
+    if links:
+        respond(text="\n".join(f"`{link}`" for link in links), response_type="ephemeral")
+    else:
+        respond(text="No 1Password private links found in that message.", response_type="ephemeral")
+    logger.info("shortcut handled: %d link(s)", len(links))
+
+
 def auto_join_enabled():
     toggle = os.environ.get("AUTO_JOIN_PUBLIC_CHANNELS", "true").strip().lower()
     return toggle in ("1", "true", "yes", "t", "y")
@@ -88,6 +102,7 @@ def create_app(**overrides):
     # Mass-joining hundreds of channels can hit 429s; honor Retry-After.
     app.client.retry_handlers.append(RateLimitErrorRetryHandler(max_retry_count=3))
     app.event("message")(handle_message)
+    app.shortcut("fix_op_link")(handle_fix_link_shortcut)
     return app
 
 

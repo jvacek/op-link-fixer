@@ -1,7 +1,13 @@
 import pytest
 from slack_sdk.errors import SlackApiError
 
-from app import auto_join_enabled, auto_join_public_channels, extract_deep_links, handle_message
+from app import (
+    auto_join_enabled,
+    auto_join_public_channels,
+    extract_deep_links,
+    handle_fix_link_shortcut,
+    handle_message,
+)
 
 PRIVATE_LINK = "https://start.1password.com/open/i?a=A&amp;v=V&amp;i=I&amp;h=team.1password.com"
 DEEP_LINK = "onepassword://open/i?a=A&v=V&i=I&h=team.1password.com"
@@ -124,6 +130,42 @@ class TestHandleMessage:
         handle_message({"ts": "1.0"}, say)
 
         assert say.calls == []
+
+
+class TestHandleFixLinkShortcut:
+    @staticmethod
+    def shortcut_body(message_text):
+        return {"type": "message_action", "callback_id": "fix_op_link", "message": {"text": message_text}}
+
+    def test_acks_and_responds_ephemerally_with_converted_link(self):
+        ack = SaySpy()
+        respond = SaySpy()
+
+        handle_fix_link_shortcut(ack, self.shortcut_body(f"see <{PRIVATE_LINK}|secret>"), respond)
+
+        assert len(ack.calls) == 1
+        assert len(respond.calls) == 1
+        assert respond.calls[0]["response_type"] == "ephemeral"
+        assert f"`{DEEP_LINK}`" in respond.calls[0]["text"]
+
+    def test_message_without_link_gets_a_helpful_ephemeral_reply(self):
+        ack = SaySpy()
+        respond = SaySpy()
+
+        handle_fix_link_shortcut(ack, self.shortcut_body("no links here"), respond)
+
+        assert len(ack.calls) == 1
+        assert respond.calls[0]["response_type"] == "ephemeral"
+        assert "No 1Password private links" in respond.calls[0]["text"]
+
+    def test_message_with_no_text_field_does_not_crash(self):
+        ack = SaySpy()
+        respond = SaySpy()
+
+        handle_fix_link_shortcut(ack, {"type": "message_action", "callback_id": "fix_op_link"}, respond)
+
+        assert len(ack.calls) == 1
+        assert "No 1Password private links" in respond.calls[0]["text"]
 
 
 class TestAutoJoinEnabled:
