@@ -53,7 +53,8 @@ def handle_message(event, say):
 
 
 def auto_join_enabled():
-    return os.environ.get("AUTO_JOIN_PUBLIC_CHANNELS", "true").strip().lower() in ("1", "true", "yes")
+    toggle = os.environ.get("AUTO_JOIN_PUBLIC_CHANNELS", "true").strip().lower()
+    return toggle in ("1", "true", "yes", "t", "y")
 
 
 def auto_join_public_channels(client):
@@ -63,9 +64,7 @@ def auto_join_public_channels(client):
     joined = already = failed = 0
     cursor = None
     while True:
-        page = client.conversations_list(
-            types="public_channel", exclude_archived=True, limit=200, cursor=cursor
-        )
+        page = client.conversations_list(types="public_channel", exclude_archived=True, limit=200, cursor=cursor)
         for channel in page["channels"]:
             if channel.get("is_member"):
                 already += 1
