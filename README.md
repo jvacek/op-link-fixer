@@ -48,6 +48,14 @@ uv run app.py
 - Processes normal messages, thread replies broadcast to the channel, and
   file uploads with comments; ignores edits, deletions, and all bot messages
   (no self-reply loops).
+- **Message shortcut** "Fix 1Password link" (message context menu → More
+  actions): works on any message *you* can see — including DMs and private
+  channels the bot is not in — and replies with an ephemeral message only
+  you see. Interactivity payloads arrive over the same Socket Mode
+  WebSocket; no public URL needed.
+- **Slash command** `/1p-link <link>`: converts a private link and posts it
+  to the conversation for everyone (works anywhere, including DMs the bot
+  isn't in). Invalid input gets an ephemeral usage hint only you see.
 
 ## Development
 
@@ -79,8 +87,10 @@ message. Socket Mode is outbound-only, so no Service or Ingress is needed.
 
 ## Known limitations
 
-- **DMs between other users** are invisible to bots; only DMs sent directly
-  to the bot are covered.
-- **Private channels** need a one-time `/invite @op-link-fixer`.
+- **DMs between other users** are invisible to bots, so there are no
+  automatic replies there — but the message shortcut works in any
+  conversation, since the user invokes it on a message they can see.
+- **Private channels** need a one-time `/invite @op-link-fixer` for
+  automatic replies (the shortcut works without it).
 - **`onepassword://` links are not clickable** in the Slack web client; they
   render as code. The desktop app/OS may handle the scheme on click.

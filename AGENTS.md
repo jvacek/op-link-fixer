@@ -77,6 +77,19 @@ are configured in `pyproject.toml`; CI enforces `uv lock --check`, `pytest`,
    thread — and `unfurl_links=False` to avoid Slack expanding the
    `onepassword://` URI.
 
+6. **Message shortcut** (`fix_op_link`, declared in `manifest.yml` with
+   interactivity enabled): users can invoke it on any message they can see,
+   including DMs and private channels the bot is not a member of. The reply
+   goes through the payload's `response_url` (not `chat.postMessage`, which
+   would fail there) as an ephemeral message only the invoker sees.
+   Interactivity payloads arrive over the Socket Mode WebSocket.
+
+7. **Slash command** `/1p-link <link>` (declared in `manifest.yml`): converts
+   a pasted private link and posts it to the conversation
+   (`response_type: in_channel` via `response_url`, so it works in DMs and
+   anywhere else regardless of bot membership). The usage hint for input
+   without a convertible link stays ephemeral.
+
 ---
 
 ## Environment variables
@@ -124,10 +137,12 @@ every event and would reply in duplicate.
 
 ## Known limitations / potential improvements
 
-- **DMs between other users** — Slack does not expose these to bots; only
-  DMs _sent directly to the bot_ are covered.
-- **Private channels** — require a one-time `/invite @op-link-fixer` per
-  channel; there is no way to auto-join these.
+- **DMs between other users** — Slack does not expose these to bots, so no
+  automatic replies there; the message shortcut covers them on demand since
+  the invoking user can see the message.
+- **Private channels** — automatic replies require a one-time
+  `/invite @op-link-fixer` per channel; there is no way to auto-join these.
+  The shortcut works without the invite.
 - **onepassword:// link rendering** — the bot posts the URI in a code span,
   which is never clickable. Links composed with Slack's markup editor have
   been observed to work as clickable links, so replying with
