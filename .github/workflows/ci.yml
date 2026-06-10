@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
   pull_request:
+  # allows the docker workflow to run these checks as a gating job
+  workflow_call:
 
 jobs:
   checks:
