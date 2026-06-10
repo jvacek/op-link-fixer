@@ -32,11 +32,11 @@ uv run app.py
 
 ## Configuration
 
-| Env var | Purpose |
-|---------|---------|
-| `SLACK_BOT_TOKEN` | Bot token (`xoxb-…`), from OAuth & Permissions after install |
-| `SLACK_APP_TOKEN` | App-level token (`xapp-…`) with `connections:write` |
-| `SLACK_SIGNING_SECRET` | Not required in Socket Mode; documented for completeness |
+| Env var                     | Purpose                                                                                                                                                                            |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SLACK_BOT_TOKEN`           | Bot token (`xoxb-…`), from OAuth & Permissions after install                                                                                                                       |
+| `SLACK_APP_TOKEN`           | App-level token (`xapp-…`) with `connections:write`                                                                                                                                |
+| `SLACK_SIGNING_SECRET`      | Not required in Socket Mode; documented for completeness                                                                                                                           |
 | `AUTO_JOIN_PUBLIC_CHANNELS` | Default `true`: join every public channel on startup (cursor-paginated, handles hundreds of channels, 429s retried). Set `false` to only listen where the bot is already a member. |
 
 ## Behavior
@@ -68,8 +68,10 @@ uv run pyrefly check       # type check
 
 ## Deploy
 
-Every push to `main` (and `v*` tags) publishes
-`ghcr.io/jvacek/op-link-fixer` via GitHub Actions. A single-replica
+Pushing a version tag (`v1.2.3`) publishes `ghcr.io/jvacek/op-link-fixer`
+via GitHub Actions — the full check suite (tests, lint, types, lockfile)
+must pass on the tagged commit first, and the workflow refuses to publish
+tags pointing at commits that aren't on `main`. A single-replica
 Kubernetes example lives in
 [`deploy/deployment.example.yaml`](deploy/deployment.example.yaml) — tokens
 come from a Secret; keep `replicas: 1` or every replica will reply to every

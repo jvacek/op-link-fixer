@@ -30,12 +30,13 @@ links and thread-replies with the corrected URI.
 
 ```
 app.py                          — bot entrypoint (all logic lives here)
-tests/test_app.py               — pytest unit tests (pure stubs, no network)
+tests/test_app.py               — unit tests for the pure functions (stubs, no I/O)
+tests/test_wiring.py            — integration tests: real Bolt App + mock Slack Web API server
 pyproject.toml / uv.lock        — Python project, managed with uv
 manifest.yml                    — Slack app config as code (scopes, events, socket mode)
 .env.example                    — documents the env vars
 Dockerfile / .dockerignore      — container image (uv alpine base)
-.github/workflows/docker.yml    — publishes ghcr.io/jvacek/op-link-fixer on push to main
+.github/workflows/docker.yml    — publishes ghcr.io/jvacek/op-link-fixer on v* tags, gated on CI + tag-on-main guard
 .github/workflows/ci.yml        — uv lock check, ruff lint + format, pyrefly type check
 .pre-commit-config.yaml         — same checks locally (uvx pre-commit install)
 deploy/deployment.example.yaml  — single-replica Kubernetes example
@@ -114,7 +115,8 @@ uv run app.py
 ```
 
 No build step. In production, run the container image
-`ghcr.io/jvacek/op-link-fixer` (published by CI on push to `main`); see
+`ghcr.io/jvacek/op-link-fixer` (published by CI when a `v*` tag is pushed,
+and only after the full check suite passes on the tagged commit); see
 `deploy/deployment.example.yaml`. Keep `replicas: 1` — every replica gets
 every event and would reply in duplicate.
 
