@@ -27,3 +27,6 @@ jobs:
 
       - name: Pyrefly type check
         run: uv run pyrefly check
+
+      - name: Tests
+        run: uv run pytest
